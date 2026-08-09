@@ -1,0 +1,49 @@
+#!/system/bin/sh
+# HyperOS Tweak Module (Android 14+) - High End Profile
+# Runtime commands only (settings / sysctl)
+# NOTE: Debloat is handled from the WebUI, not here.
+
+MODDIR="${0%/*}"
+LOG="$MODDIR/service.log"
+
+log() {
+  echo "[$(date '+%H:%M:%S')] $1" >> "$LOG"
+}
+
+# --- WAIT FOR BOOT COMPLETE ---
+until [ "$(getprop sys.boot_completed)" = "1" ]; do
+  sleep 5
+done
+
+# Delay for HyperOS to finish loading its base services
+sleep 15
+
+log "Boot complete, initializing High-End profile"
+
+# --- MEMORY: favor zRAM reclaim over LMK hard kills (6GB+ + LMK) ---
+apply_sysctl() {
+  if sysctl -w "$1=$2" >/dev/null 2>&1; then
+    log "sysctl $1=$2"
+  else
+    log "sysctl $1 not available on this kernel, skipped"
+  fi
+}
+
+# High swappiness (not low) is correct here: with zRAM + LMK, we want
+# the kernel to compress background apps into zRAM instead of LMK
+# killing them outright. Fewer kills = fewer full reloads when
+# switching back to an app = less "stuck/laggy" feel when app-switching.
+apply_sysctl vm.swappiness 100
+apply_sysctl vm.vfs_cache_pressure 50
+apply_sysctl vm.page-cluster 0   # zRAM is RAM, not disk: no read-ahead needed, less (de)compression CPU cost
+
+log "Memory tweaks applied (swappiness=100, vfs_cache_pressure=50, page-cluster=0)"
+
+# --- TOUCH RESPONSE & ANIMATIONS ---
+settings put secure long_press_timeout 250
+settings put global window_animation_scale 0.75
+settings put global transition_animation_scale 0.75
+settings put global animator_duration_scale 0.75
+
+log "Touch and animation tweaks applied"
+log "High-End profile applied successfully"

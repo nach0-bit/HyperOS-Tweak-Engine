@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperOS Optimizer WebUI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-top">
+        <div class="logo-area">
+          <span class="badge">N.DEV</span>
+          <h1>HyperOS Tweak Engine</h1>
+        </div>
+        <select id="lang-selector" class="lang-select" onchange="changeLanguage(this.value)">
+          <option value="EN">EN</option>
+          <option value="ES">ES</option>
+          <option value="RU">RU</option>
+        </select>
+      </div>
+      <p class="subtitle" data-i18n="subtitle">Interactive Panel for APatch and KernelSU</p>
+    </header>
+
+    <!-- RAM Monitor Card -->
+    <section class="card ram-card">
+      <div class="card-header">
+        <h2 data-i18n="ram_title">Memory Status</h2>
+        <button class="btn-icon" onclick="refreshRAM()">🔄</button>
+      </div>
+      <div class="ram-status-container">
+        <div class="ram-info">
+          <span id="ram-used">-- GB</span> / <span id="ram-total">-- GB</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="ram-bar" style="width: 0%;"></div>
+        </div>
+        <div class="ram-subtext">
+          <span><span data-i18n="free_ram">Free RAM:</span> <strong id="ram-free" class="highlight">-- GB</strong></span>
+          <span id="ram-percentage">0% <span data-i18n="used">Used</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CPU Monitor & Governor Card -->
+    <section class="card">
+      <div class="card-header">
+        <h2 data-i18n="cpu_title">CPU Status</h2>
+        <button class="btn-icon" onclick="refreshCPU()">🔄</button>
+      </div>
+      <div class="cpu-status-row">
+        <div class="cpu-stat">
+          <span class="cpu-stat-label" data-i18n="governor">Governor</span>
+          <span class="cpu-stat-value" id="cpu-governor">--</span>
+        </div>
+        <div class="cpu-stat">
+          <span class="cpu-stat-label" data-i18n="freq">Frequency</span>
+          <span class="cpu-stat-value" id="cpu-freq">-- MHz</span>
+        </div>
+        <div class="cpu-stat">
+          <span class="cpu-stat-label" data-i18n="cores">Cores</span>
+          <span class="cpu-stat-value" id="cpu-cores">--</span>
+        </div>
+      </div>
+      <p class="card-desc" style="margin-top:12px;" data-i18n="cpu_desc">Quick governor switching for all cores.</p>
+      <div class="chip-group" id="governor-chips">
+        <button class="chip" data-gov="performance" onclick="setGovernor('performance')" data-i18n="perf">Performance</button>
+        <button class="chip" data-gov="schedutil" onclick="setGovernor('schedutil')" data-i18n="balanced">Balanced</button>
+        <button class="chip" data-gov="powersave" onclick="setGovernor('powersave')" data-i18n="powersave">Powersave</button>
+      </div>
+    </section>
+
+    <!-- Display Card -->
+    <section class="card">
+      <h2 data-i18n="display_title">Display</h2>
+      <p class="card-desc" data-i18n="display_desc">Force refresh rate (the panel must support the chosen value).</p>
+      <div class="chip-group" id="refresh-chips">
+        <button class="chip" data-hz="60" onclick="setRefreshRate('60')">60Hz</button>
+        <button class="chip" data-hz="90" onclick="setRefreshRate('90')">90Hz</button>
+        <button class="chip" data-hz="120" onclick="setRefreshRate('120')">120Hz</button>
+        <button class="chip" data-hz="auto" onclick="setRefreshRate('auto')">Auto</button>
+      </div>
+    </section>
+
+    <!-- Profile Selector -->
+    <section class="card">
+      <h2 data-i18n="profiles_title">Tweak Profiles</h2>
+      <p class="card-desc" data-i18n="profiles_desc">Applies hardware-optimized kernel and memory parameters.</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="applyProfile('high')" data-i18n="profile_high">
+          ⚡ 6GB+ High Performance
+        </button>
+        <button class="btn btn-secondary" onclick="applyProfile('low')" data-i18n="profile_low">
+          🛡️ 6GB- Memory Saver
+        </button>
+      </div>
+    </section>
+
+    <!-- Quick Actions & Cleaners -->
+    <section class="card">
+      <h2 data-i18n="cleaners_title">System Cleaners</h2>
+      <div class="grid-2">
+        <button class="btn btn-action" onclick="runCleanRAM()" data-i18n="clean_ram">
+          🧹 Clear Cache (RAM)
+        </button>
+        <button class="btn btn-action" onclick="runTrim()" data-i18n="trim_storage">
+          💾 Storage FSTRIM
+        </button>
+        <button class="btn btn-action" onclick="killBackgroundApps()" data-i18n="kill_apps">
+          ⛔ Kill Background Apps
+        </button>
+        <button class="btn btn-action" onclick="resetBatteryStats()" data-i18n="reset_battery">
+          🔋 Reset Battery Stats
+        </button>
+      </div>
+    </section>
+
+    <!-- Tweak Switches -->
+    <section class="card">
+      <h2 data-i18n="tweaks_title">Tweak Controls</h2>
+      
+      <div class="switch-row">
+        <div class="switch-info">
+          <span class="switch-title" data-i18n="joyose_title">Thermal Performance (Joyose)</span>
+          <span class="switch-desc" data-i18n="joyose_desc">Disables Joyose for maximum gaming FPS.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-joyose" onchange="toggleJoyose(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <div class="switch-info">
+          <span class="switch-title" data-i18n="doze_title">Aggressive Doze Mode</span>
+          <span class="switch-desc" data-i18n="doze_desc">Disables background restrictions for instant touch response.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-doze" onchange="toggleDoze(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <div class="switch-info">
+          <span class="switch-title" data-i18n="miuiopt_title">Disable MIUI/HyperOS Optimization</span>
+          <span class="switch-desc" data-i18n="miuiopt_desc">persist.sys.miui_optimization = 0. Improves compatibility. Requires reboot.</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-miuiopt" onchange="toggleMiuiOptimization(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="switch-row">
+        <div class="switch-info">
+          <span class="switch-title" data-i18n="ads_title">Remove Ads and Analytics</span>
+          <span class="switch-desc" data-i18n="ads_desc">Disables Xiaomi ad services (MSA, systemAdSolution).</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="toggle-ads" onchange="toggleAdsDebloat(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Output Terminal Log -->
+    <section class="card log-card">
+      <div class="card-header">
+        <h2 data-i18n="terminal_title">Execution Terminal</h2>
+        <button class="btn-sm" onclick="clearLog()" data-i18n="clear">Clear</button>
+      </div>
+      <div class="terminal" id="terminal-log">
+        <div class="log-entry info">[SYSTEM] WebUI Loaded. Ready for input...</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+

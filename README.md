@@ -31,3 +31,9 @@ Focuses on stability and free RAM. Implements aggressive zRAM usage to prevent o
 
 ## ⚠️ Safety & Compatibility
 This module uses safe runtime commands (`sysctl`, `settings put`, `pm disable-user`). It is fully compatible with rescue tools like AshLoper / Auto-Skip Catcher in case of boot loops.
+
+## ⚖️ Licence 
+This project uses a component-based licensing scheme:
+- **Core (`/Core`):** under license [GPL v3.0](https://www.gnu.org/licenses/gpl-3.0.html).
+- **WebUI (`/webroot`):** Under license [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+

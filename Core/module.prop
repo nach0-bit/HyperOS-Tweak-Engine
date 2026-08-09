@@ -1,6 +1,6 @@
 id=hyperos_tweaks
 name=HyperOS Tweak Engine
-version=alpha 0.10
+version=1.0
 versionCode=100
 author=N.DEV
 description=This module makes optimizations and tweaks to the Xiaomi framework and the system

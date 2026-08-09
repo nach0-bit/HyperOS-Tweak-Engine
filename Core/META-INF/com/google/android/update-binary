@@ -1,0 +1,26 @@
+#!/sbin/sh
+#################
+# Magisk / KernelSU / APatch Module Installer Script
+#################
+
+# Definir la ruta del ZIP y el descriptor de salida
+ZIPFILE="$2"
+OUTFD=$3
+
+# Cargar las funciones del instalador de Magisk/KSU
+if [ -f /data/adb/magisk/util_functions.sh ]; then
+  . /data/adb/magisk/util_functions.sh
+elif [ -f /data/adb/ksu/util_functions.sh ]; then
+  . /data/adb/ksu/util_functions.sh
+elif [ -f /data/adb/apatch/util_functions.sh ]; then
+  . /data/adb/apatch/util_functions.sh
+fi
+
+# Extraer el módulo a la carpeta temporal y ejecutar install.sh
+unzip -o "$ZIPFILE" 'customize.sh' -d "$TMPDIR" >&2
+if [ -f "$TMPDIR/customize.sh" ]; then
+  . "$TMPDIR/customize.sh"
+fi
+
+# Iniciar la instalación estándar de Magisk/KSU
+unzip -o "$ZIPFILE" '*' -d "$ZIPDIR" >&2

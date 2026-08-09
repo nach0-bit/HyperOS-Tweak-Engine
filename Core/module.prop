@@ -4,3 +4,4 @@ version=1.0
 versionCode=100
 author=N.DEV
 description=This module makes optimizations and tweaks to the Xiaomi framework and the system
+updateJson=https://raw.githubusercontent.com/nach0-bit/HyperOS-Tweak-Engine/main/update.json
